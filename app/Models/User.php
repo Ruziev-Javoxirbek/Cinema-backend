@@ -12,7 +12,7 @@ class User extends Authenticatable
     use HasApiTokens, HasFactory, Notifiable;
 
     /**
-     * Атрибуты, которые можно массово присваивать.
+     *
      *
      * @var array<int, string>
      */
@@ -20,12 +20,12 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
-        'role', // Если role используется в проекте
-        'city_id', // Если используется city_id
+        'role',
+        'city_id',
     ];
 
     /**
-     * Атрибуты, которые скрываются при сериализации.
+     *
      *
      * @var array<int, string>
      */
@@ -35,7 +35,7 @@ class User extends Authenticatable
     ];
 
     /**
-     * Атрибуты, которые должны быть приведены к определённым типам.
+     *
      *
      * @var array<string, string>
      */
@@ -44,7 +44,7 @@ class User extends Authenticatable
     ];
 
     /**
-     * Связь пользователя с сессиями (many-to-many).
+     *
      */
     public function sessions()
     {

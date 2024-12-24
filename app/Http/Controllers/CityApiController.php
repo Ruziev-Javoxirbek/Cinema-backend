@@ -2,24 +2,22 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Session;
+use App\Models\City;
 use Illuminate\Http\Request;
 
-class SessionApiController extends Controller
+class CityApiController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
+
     public function index(Request $request)
     {
-        return response(Session::limit($request->perpage ?? 5)
+        return response(City::limit($request->perpage ?? 5)
             ->offset(($request->perpage ?? 5) * ($request->page ?? 0))
             ->get());
     }
 
     public function total()
     {
-        return response(Session::all()->count());
+        return response (City::all()->count());
     }
 
     public function store(Request $request)
@@ -32,7 +30,7 @@ class SessionApiController extends Controller
      */
     public function show(string $id)
     {
-        return response(Session::find($id));
+        return response(City::find($id));
     }
 
     /**
