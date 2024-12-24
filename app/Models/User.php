@@ -26,7 +26,6 @@ class User extends Authenticatable
 
     /**
      *
-     *
      * @var array<int, string>
      */
     protected $hidden = [
@@ -44,6 +43,7 @@ class User extends Authenticatable
     ];
 
     /**
+     *
      *
      */
     public function sessions()
