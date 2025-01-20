@@ -16,8 +16,10 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/user', function (Request $request) {
         return response()->json($request->user());
     });
+    Route::post('/movies', [MovieApiController::class, 'store']);
     Route::get('/logout', [AuthController::class, 'logout']);
 });
+
 
 Route::get('/movies', [MovieApiController::class, 'index']);
 Route::get('/movies_total', [MovieApiController::class, 'total']);

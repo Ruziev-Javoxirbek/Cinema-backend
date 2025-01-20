@@ -13,4 +13,17 @@ class Movie extends Model
     {
         return $this->hasMany(Session::class);
     }
+
+    /**
+     * The attributes that are mass assignable.
+     *
+     * @var array
+     */
+    protected $fillable = [
+        'title',
+        'picture_url',
+        'description',
+        'duration',
+        'release_date',
+    ];
 }

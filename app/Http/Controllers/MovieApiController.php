@@ -3,7 +3,12 @@
 namespace App\Http\Controllers;
 
 use App\Models\Movie;
+use Aws\S3\S3Client;
+use Exception;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Gate;
+
 
 class MovieApiController extends Controller
 {
@@ -27,12 +32,75 @@ class MovieApiController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        if (! Gate::allows('create-movie')) {
+           return response()->json([
+               'code' => 1,
+               'message' => 'У вас нет права на добавление фильма!'
+           ]);
+        }
+        // Валидация данных
+        $validated = $request->validate([
+            'title' => 'required|unique:movies|max:255',
+            'description' => 'required|string',
+            'duration' => 'nullable|integer',
+            'release_date' => 'nullable|date',
+            'image' => 'required|file',
+        ]);
+
+        // Получение файла из запроса
+        $file = $request->file('image');
+        $fileName = rand(1, 100000) . '_' . $file->getClientOriginalName();
+        $s3Path = 'movie_pictures/' . $fileName;
+
+        try {
+            // Использование АВС СДК прямо
+            $s3 = new S3Client([
+                'region' => env('AWS_DEFAULT_REGION'),
+                'version' => 'latest',
+                'endpoint' => env('AWS_ENDPOINT'),
+                'credentials' => [
+                    'key' => env('AWS_ACCESS_KEY_ID'),
+                    'secret' => env('AWS_SECRET_ACCESS_KEY'),
+                ],
+                'use_path_style_endpoint' => false,
+                'http' => [
+                    'verify' => false,
+                ],
+            ]);
+            // Загрузка файла в S3.
+            $result = $s3->putObject([
+                'Bucket' => env('AWS_BUCKET'),
+                'Key'    => $s3Path,
+                'Body'   => fopen($file->getRealPath(), 'r'),
+            ]);
+            // Генерация URL
+            $fileUrl = $result['ObjectURL'];
+        } catch (Exception $e) {
+            return response()->json([
+                'code' => 2,
+                'message' => 'Ошибка загрузки файла в хранилище S3',
+            ]);
+        }
+        $movie = new Movie($validated);
+        $movie->picture_url = $fileUrl;
+        $movie->duration = $request->input('duration', 120);
+        $movie->save();
+        return response()->json([
+            'code' => 0,
+            'message' => 'Фильм успешно добавлен',
+        ]);
     }
 
     /**
      * Display the specified resource.
      */
+
+    //            $path = 'movie_pictures/' . $fileName;
+    //            Storage::disk('s3')->put($path, file_get_contents($file->getRealPath()));
+    //            $fileUrl = Storage::disk('s3')->url($path);
+    //--------------------------------------------------
+    //$path = Storage::disk('s3')->putFileAs('movie_pictures', $file, $fileName);
+    //            $fileUrl = Storage::disk('s3')->url($path);
     public function show(string $id)
     {
         return response(Movie::find($id));
