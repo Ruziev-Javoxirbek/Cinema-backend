@@ -50,31 +50,12 @@ class MovieApiController extends Controller
         // Получение файла из запроса
         $file = $request->file('image');
         $fileName = rand(1, 100000) . '_' . $file->getClientOriginalName();
-        $s3Path = 'movie_pictures/' . $fileName;
 
         try {
-            // Использование АВС СДК прямо
-            $s3 = new S3Client([
-                'region' => env('AWS_DEFAULT_REGION'),
-                'version' => 'latest',
-                'endpoint' => env('AWS_ENDPOINT'),
-                'credentials' => [
-                    'key' => env('AWS_ACCESS_KEY_ID'),
-                    'secret' => env('AWS_SECRET_ACCESS_KEY'),
-                ],
-                'use_path_style_endpoint' => false,
-                'http' => [
-                    'verify' => false,
-                ],
-            ]);
-            // Загрузка файла в S3.
-            $result = $s3->putObject([
-                'Bucket' => env('AWS_BUCKET'),
-                'Key'    => $s3Path,
-                'Body'   => fopen($file->getRealPath(), 'r'),
-            ]);
-            // Генерация URL
-            $fileUrl = $result['ObjectURL'];
+            // Загрузка файла в S3
+            $path = Storage::disk('s3')->putFileAs('movie_pictures', $file, $fileName);
+            $fileUrl = Storage::disk('s3')->url($path);
+
         } catch (Exception $e) {
             return response()->json([
                 'code' => 2,
